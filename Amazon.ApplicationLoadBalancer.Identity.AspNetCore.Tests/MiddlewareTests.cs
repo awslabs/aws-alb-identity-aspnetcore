@@ -1,29 +1,31 @@
-namespace Amazon.Lambda.ApplicationLoadBalancerIdentity.Tests
+﻿namespace Amazon.ApplicationLoadBalancer.Identity.AspNetCore.Tests
 {
     using System;
-    using System.IO;
     using System.Net;
     using System.Net.Http;
     using System.Threading;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Primitives;
     using Microsoft.IdentityModel.JsonWebTokens;
     using Moq;
     using Moq.Protected;
     using Xunit;
 
-    public class FunctionTests
+    public class MiddlewareTests : IClassFixture<CustomWebAppFactory<TestStartup>>
     {
-        [Theory]
-        [InlineData(null)]
-        [InlineData(ushort.MaxValue)]
-        public async Task ValidationTest(ushort? cacheSize)
+        private readonly CustomWebAppFactory<TestStartup> fixture;
+
+        public MiddlewareTests(CustomWebAppFactory<TestStartup> fixture)
+        {
+            this.fixture = fixture;
+        }
+
+        [Fact]
+        public async Task MiddlewareTest()
         {
             await TestConstants.TestLock.WaitAsync();
             try
             {
-                await RunTest(cacheSize);
+                await this.RunTest();
             }
             finally
             {
@@ -32,17 +34,8 @@ namespace Amazon.Lambda.ApplicationLoadBalancerIdentity.Tests
             }
         }
 
-        private static async Task RunTest(ushort? cacheSize)
+        private async Task RunTest()
         {
-            var opts = new ALBIdentityMiddlewareOptions
-            {
-                ValidateTokenSignature = true,
-                MaxCacheSizeMB = cacheSize,
-                ValidateTokenLifetime = false
-            };
-
-            Environment.SetEnvironmentVariable(ALBIdentityMiddleware.AWSRegionEnvironmentVariable, "us-west-2");
-
             var jwt = new JsonWebToken(TestConstants.TokenData);
             var expectedUri = string.Format(ALBIdentityMiddleware.ALBPublicKeyUrlFormatString, "us-west-2", jwt.Kid);
 
@@ -61,28 +54,15 @@ namespace Amazon.Lambda.ApplicationLoadBalancerIdentity.Tests
                })
                .Verifiable();
 
-            var rd = new RequestDelegate((_) => Task.CompletedTask);
-
             ALBIdentityMiddleware.InternalHttpClient = new HttpClient(handlerMock.Object);
-            var mw = new ALBIdentityMiddleware(rd, null, opts);
 
-            var testContext = new DefaultHttpContext();
-            testContext.Request.Headers.Add(ALBIdentityMiddleware.OidcDataHeader, new StringValues(TestConstants.TokenData));
-
-            await mw.Invoke(testContext);
-
-            Assert.NotNull(testContext.User);
-            if (testContext.Response.StatusCode != 200)
+            using (var client = this.fixture.CreateDefaultClient())
             {
-                using (var sr = new StreamReader(testContext.Response.Body))
-                {
-                    throw new Exception(sr.ReadToEnd());
-                }
-            }
+                await SendRequest(TestConstants.TokenData, client);
 
-            Assert.Equal(200, testContext.Response.StatusCode);
-            Assert.Equal("yancej@amazon.com", testContext.User.Identity.Name);
-            Assert.Equal("alboidc", testContext.User.FindFirst("aud").Value);
+                // Send request again, so that the mock can verify the cache is working
+                await SendRequest(TestConstants.TokenData, client);
+            }
 
             handlerMock.Protected().Verify(
                "SendAsync",
@@ -93,6 +73,21 @@ namespace Amazon.Lambda.ApplicationLoadBalancerIdentity.Tests
                ),
                ItExpr.IsAny<CancellationToken>()
             );
+        }
+
+        private static async Task SendRequest(string tokenData, HttpClient client)
+        {
+            using (var req = new HttpRequestMessage(HttpMethod.Get, "/"))
+            {
+                req.Headers.TryAddWithoutValidation(ALBIdentityMiddleware.OidcDataHeader, tokenData);
+
+                var resp = await client.SendAsync(req);
+                if (resp.StatusCode != HttpStatusCode.OK)
+                    throw new Exception(await resp.Content.ReadAsStringAsync());
+
+                var user = await resp.Content.ReadAsStringAsync();
+                Assert.Equal("yancej@amazon.com", user);
+            }
         }
     }
 }

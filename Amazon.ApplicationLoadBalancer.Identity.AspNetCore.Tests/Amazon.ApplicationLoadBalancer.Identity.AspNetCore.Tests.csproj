@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <AssemblyName>Amazon.Lambda.ApplicationLoadBalancerIdentity.Tests</AssemblyName>
+    <AssemblyName>Amazon.ApplicationLoadBalancer.Identity.AspNetCore.Tests</AssemblyName>
     <OutputType>Library</OutputType>
-    <PackageId>Amazon.Lambda.ApplicationLoadBalancerIdentity.Tests</PackageId>
+    <PackageId>Amazon.ApplicationLoadBalancer.Identity.AspNetCore.Tests</PackageId>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Amazon.Lambda.ApplicationLoadBalancerIdentity\Amazon.Lambda.ApplicationLoadBalancerIdentity.csproj" />
+    <ProjectReference Include="..\Amazon.ApplicationLoadBalancer.Identity.AspNetCore\Amazon.ApplicationLoadBalancer.Identity.AspNetCore.csproj" />
   </ItemGroup>
 
   <ItemGroup>

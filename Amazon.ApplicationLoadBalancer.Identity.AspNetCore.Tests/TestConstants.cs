@@ -1,4 +1,4 @@
-﻿namespace Amazon.Lambda.ApplicationLoadBalancerIdentity.Tests
+﻿namespace Amazon.ApplicationLoadBalancer.Identity.AspNetCore.Tests
 {
     using System;
     using System.IO;

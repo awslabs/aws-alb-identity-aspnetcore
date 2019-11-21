@@ -1,4 +1,4 @@
-﻿namespace Amazon.Lambda.ApplicationLoadBalancerIdentity
+﻿namespace Amazon.ApplicationLoadBalancer.Identity.AspNetCore
 {
     using System;
     using System.Collections.Concurrent;

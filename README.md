@@ -1,8 +1,22 @@
-# Amazon.Lambda.ApplicationLoadBalancerIdentity
+# Amazon.ApplicationLoadBalancer.Identity.AspNetCore
 
 This package contains Middleware that can be used in conjunction with the Application Load Balancer (ALB) OpenId Connect integration to populate the "User" property in the RequestContext.
 
 It can be used in any ASP.NET Core deployment scenario, including Fargate, EC2, and Lambda.
+
+# Building
+The library is currently in preview, and does not have a NuGet package.
+
+To use the library now, follow these steps:
+- Clone the repo onto you developer machine
+- Copy the "Amazon.ApplicationLoadBalancer.Identity.AspNetCore" directory to a subdirectory somewhere in your solution's directory tree
+- Open your solution in your preferred IDE
+- Right click on your solution (or a subdirectory), expand the "Add" menu item, then click "Existing Project"
+- Select the "Amazon.ApplicationLoadBalancer.Identity.AspNetCore.csproj" file in the directory you copied.
+- In your ASP.NET Core project, add a reference to the "Amazon.ApplicationLoadBalancer.Identity.AspNetCore" project you just added.
+- Check in the code to your own repository.
+
+If you plan on making any changes to the source, you should repeat the process for the "Tests" project.
 
 # Configuring the Middleware
 ## ALBIdentityMiddlewareOptions class
