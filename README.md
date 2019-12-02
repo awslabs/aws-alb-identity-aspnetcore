@@ -1,8 +1,45 @@
-# Amazon.ApplicationLoadBalancer.Identity.AspNetCore
+# Amazon.ApplicationLoadBalancer.Identity.AspNetCore (Preview)
 
-This package contains Middleware that can be used in conjunction with the Application Load Balancer (ALB) OpenId Connect integration to populate the "User" property in the RequestContext.
+This package contains Middleware that can be used in conjunction with the [Application Load Balancer (ALB) OpenId Connect integration](https://aws.amazon.com/blogs/aws/built-in-authentication-in-alb/)
 
-It can be used in any ASP.NET Core deployment scenario, including Fargate, EC2, and Lambda.
+It can be used in any ASP.NET Core deployment scenario, including Fargate, EKS, ECS, EC2, and Lambda.
+
+It will populate the "User" property in the request's HttpContext with a "ClaimsPrincipal" object that contains the username that is returned by the OpenId Connect Identity Provider (OIDC IDP) that the ALB is configured to use. It will also add "group" claims that are returned by the OIDC IDP to the ClaimsPrincipal as "Role" claims (you can change the claim name from "group" to something else in the configuration).
+
+## Referencing the ALB-injected identity in your code
+The following examples are all within a controller method, however, the user is populated in the HttpContext object.
+
+Basic example for obtaining the caller's username (within a controller method):
+```
+[HttpGet("user")]
+public string GetUser()
+{
+	return string.Format("Hello {0}", this.Request.HttpContext.User.Identity.Name);
+}
+```
+
+When the user has at least one "group" claim returned from the user info endpoint, this feature an also be used for authorization.
+The name of the "group" claim defaults to group, but this can be changed in the startup configuration.
+
+Example for attribute-based group membership checking:
+```
+[HttpDelete("deletesomething/{id}")]
+[Authorize("Administrators")]
+public string SomePrivilegedOperation(string id)
+{
+	// Your code here won't be executed unless the user has a "group" name with the value "Administrators"
+}
+```
+
+
+Example for dynamic group membership checking:
+```
+[HttpGet("membership/{groupName}")]
+public bool CheckGroupMembership(string groupName)
+{
+	return this.Request.HttpContext.User.IsInRole(groupName);
+}
+```
 
 # Building
 The library is currently in preview, and does not have a NuGet package.
