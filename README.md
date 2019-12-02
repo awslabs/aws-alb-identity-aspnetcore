@@ -105,7 +105,7 @@ Gets or sets a flag indicating whether token signatures should be validated to e
 The default value is true. If you set this to false, you will improve performance but will be sacrificing security.
 
 When you enable token verification, you are validating that the token was issued by the Application Load Balancer.
-This involves download the public signing key from the ALB key distribution endpoint (one time, then cached),
+This involves downloading the public signing key from the ALB key distribution endpoint (one time, then cached),
 and using the signature section of the JWT to ensure that the JWT was signed using the ALB's key.
 
 If you enable this, it is recommended that you enable identity caching by setting the MaxCacheSizeMB property.
