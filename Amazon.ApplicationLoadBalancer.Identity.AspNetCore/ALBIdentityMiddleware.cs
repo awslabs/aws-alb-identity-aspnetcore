@@ -225,9 +225,9 @@
 
         private static async Task BadRequest(HttpContext httpContext, string message)
         {
-            await httpContext.Response.WriteAsync(message);
             httpContext.Response.StatusCode = 400;
             httpContext.Response.Headers.Add(ContentTypeHeader, ContentTypeValue);
+            await httpContext.Response.WriteAsync(message);
         }
 
         private static ECDsaSecurityKey ConvertPemToSecurityKey(string pem)
